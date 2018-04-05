@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +17,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.example.meetgoti.temp_3.Bluetooth.Chat;
+import com.example.meetgoti.temp_3.Bluetooth.Scan;
 import com.example.meetgoti.temp_3.Bluetooth.Select;
 
 import me.aflak.bluetooth.Bluetooth;
@@ -58,6 +61,7 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
 
     private void Display(String s) {
         connection_state.setText(s);
+        Log.d("Tag" ,"Connection : " + s);
     }
 
     @Override
@@ -124,26 +128,50 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
 
     @Override
     public void onConnect(BluetoothDevice device) {
-
+        Display("Connected to " + device.getName() + "\n" + device.getAddress());
     }
 
     @Override
     public void onDisconnect(BluetoothDevice device, String message) {
-
+        Display("Disconnected!");
+        Display("Connecting again...");
+        b.connectToDevice(device);
     }
 
     @Override
     public void onMessage(String message) {
-
+        Display("Received");
+        Log.d("tag_from_device" , message);
     }
 
     @Override
     public void onError(String message) {
-
+        Display("Error : " + message );
     }
 
     @Override
-    public void onConnectError(BluetoothDevice device, String message) {
+    public void onConnectError(final BluetoothDevice device, String message) {
+        Display("Error" + message);
+        Display("Trying Again in 3s");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        b.connectToDevice(device);
+                        Display("Connecting......");
+                    }
+                } , 2000);
+            }
+        });
+    }
 
+    @Override
+    public void onBackPressed() {
+        Intent i = new Intent(newDeviceConfig.this , Select.class);
+        i.putExtra("Check","Check");
+        startActivity(i);
     }
 }
