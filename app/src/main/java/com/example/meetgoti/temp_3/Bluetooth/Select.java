@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.meetgoti.temp_3.MainActivity;
 import com.example.meetgoti.temp_3.R;
+import com.example.meetgoti.temp_3.newDeviceConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class Select extends Activity implements PullToRefresh.OnRefreshListener 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i = new Intent(Select.this, Chat.class);
+                Intent i = new Intent(Select.this, newDeviceConfig.class);
                 i.putExtra("pos", position);
                 if(registered) {
                     unregisterReceiver(mReceiver);
