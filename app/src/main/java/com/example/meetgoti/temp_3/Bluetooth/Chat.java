@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.meetgoti.temp_3.Bluetooth.Select;
 import com.example.meetgoti.temp_3.MainActivity;
 import com.example.meetgoti.temp_3.R;
 
@@ -27,6 +29,8 @@ import me.aflak.bluetooth.Bluetooth;
 public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCallback {
     private String name;
     private Bluetooth b;
+    private EditText message;
+    private Button send;
     private TextView text;
     private ScrollView scrollView;
     private boolean registered=false;
@@ -37,10 +41,12 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
         setContentView(R.layout.chat);
 
         text = (TextView)findViewById(R.id.text);
+        message = (EditText)findViewById(R.id.message);
+        send = (Button)findViewById(R.id.send);
         scrollView = (ScrollView) findViewById(R.id.scrollView);
 
         text.setMovementMethod(new ScrollingMovementMethod());
-
+        send.setEnabled(false);
 
         b = new Bluetooth(this);
         b.enableBluetooth();
@@ -52,6 +58,21 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
 
         Display("Connecting...");
         b.connectToDevice(b.getPairedDevices().get(pos));
+
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String msg = message.getText().toString();
+                message.setText("");
+
+                for(int i = 0 ; i < msg.length() ; i++) {
+                    Log.d("Tag" , String.valueOf((byte)msg.charAt(i)));;
+                }
+
+                b.send(msg);
+                Display("You: "+msg);
+            }
+        });
 
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
@@ -103,6 +124,12 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
     @Override
     public void onConnect(BluetoothDevice device) {
         Display("Connected to "+device.getName()+" - "+device.getAddress());
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                send.setEnabled(true);
+            }
+        });
     }
 
     @Override

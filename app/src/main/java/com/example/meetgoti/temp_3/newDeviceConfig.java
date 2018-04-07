@@ -17,8 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.example.meetgoti.temp_3.Bluetooth.Chat;
-import com.example.meetgoti.temp_3.Bluetooth.Scan;
 import com.example.meetgoti.temp_3.Bluetooth.Select;
 
 import me.aflak.bluetooth.Bluetooth;
@@ -128,7 +126,8 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
 
     @Override
     public void onConnect(BluetoothDevice device) {
-        Display("Connected to " + device.getName() + "\n" + device.getAddress());
+        Display("Connected to " + device.getName()  + device.getAddress());
+        b.send("Welcome To Connection");
     }
 
     @Override

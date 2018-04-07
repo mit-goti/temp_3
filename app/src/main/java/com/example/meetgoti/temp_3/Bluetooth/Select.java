@@ -25,6 +25,9 @@ import java.util.List;
 import me.aflak.bluetooth.Bluetooth;
 import me.aflak.pulltorefresh.PullToRefresh;
 
+import com.example.meetgoti.temp_3.Bluetooth.Scan;
+import com.example.meetgoti.temp_3.Bluetooth.Chat;
+
 /**
  * Created by Omar on 16/07/2015.
  */
