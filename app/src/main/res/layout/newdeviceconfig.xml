@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:background="#FFFFFF"
+        android:background="@color/Black"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -23,5 +23,28 @@
             android:textAlignment="viewEnd"
             android:textColor="@android:color/white"
             android:textStyle="bold" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50px"
+            android:layout_marginTop="50px"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp">
+
+            <LinearLayout
+                android:id="@+id/linear"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="50px"
+                android:background="@color/Black"
+                android:gravity="top|center_horizontal"
+                android:isScrollContainer="true"
+                android:orientation="vertical"
+                android:paddingTop="50px"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="35dp" />
+        </ScrollView>
     </RelativeLayout>
+
 </android.support.constraint.ConstraintLayout>
