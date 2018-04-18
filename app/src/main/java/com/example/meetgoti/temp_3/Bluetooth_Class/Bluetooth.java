@@ -97,9 +97,9 @@ public class Bluetooth {
         }
     }
 
-    public void send_byte(byte msg){
+    public void send_byte(char c){
         try {
-            out.write(msg);
+            out.write(c);
         } catch (IOException e) {
             connected=false;
             if(communicationCallback!=null)

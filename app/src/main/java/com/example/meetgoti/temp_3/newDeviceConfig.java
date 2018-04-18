@@ -36,9 +36,17 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     private boolean registered;
     private ViewGroup my_linear_layout;
     int button_id;
+    String a_string = "";
+    int flag = 0;
 
-
-
+    public static boolean isStringInteger(String number ){
+        try{
+            Integer.parseInt(number);
+        }catch(Exception e ){
+            return false;
+        }
+        return true;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,9 +74,7 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReciever , filter);
         registered = true;
-        for(int i = 0 ; i < 17 ; i++)
-            add_button();
-        add_button();
+
     }
 
     private void Display(String s) {
@@ -141,7 +147,7 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     @Override
     public void onConnect(BluetoothDevice device) {
         Display("Connected to " + device.getName()  + device.getAddress());
-        byte a = 5;
+        char a = 128;
         b.send_byte(a);
 
     }
@@ -153,10 +159,50 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         b.connectToDevice(device);
     }
 
+    int wait_flag = 0;
+    int wait_number;
     @Override
-    public void onMessage(String message) {
-        Display("Received");
-        Log.d("tag_from_device" , message);
+    public void onMessage(final String message) {
+        if(isStringInteger(message)) {
+            final int temp_int = Integer.parseInt(message);
+            if(temp_int >> 7 == 1) {
+                if(temp_int%16 != 0) {
+                    wait_flag = 1;
+                    wait_number = temp_int;
+                }
+                else
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            construct_app(wait_number , "");
+                        }
+                    });
+            }
+        }
+        else {
+            Log.d("another_thread" , "String");
+            if(wait_flag == 1) {
+                wait_flag = 0;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        construct_app(wait_number , message);
+                    }
+                });
+            }
+        }
+    }
+
+    private void construct_app(int temp_int , String mes) {
+        temp_int = temp_int>>4;
+        temp_int = temp_int%8;
+        switch (temp_int) {
+            case 0:
+            {
+                add_button(mes);
+                break;
+            }
+        }
     }
 
     @Override
@@ -190,17 +236,17 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         startActivity(i);
     }
 
-    public void add_button() {
+    public void add_button(String mes) {
         View layout2 = LayoutInflater.from(this).inflate(R.layout.button_layout , my_linear_layout , false);
         final Button btn2 = layout2.findViewById(R.id.but);
-        btn2.setText("WORLD");
+        btn2.setText(mes);
         btn2.setBackground(this.getResources().getDrawable(R.drawable.roundedbutton));
         btn2.setId(button_id);
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int a = view.getId();
-                btn2.setText("OK Pressed " + a);
+                b.send_byte((char)a);
             }
         });
         button_id++;
