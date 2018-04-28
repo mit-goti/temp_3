@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ECG</string>
+    <string name="app_name">ArduAndro</string>
     <string name="title_paired_devices">Paired device</string>
     <string name="title_other_devices">Other device</string>
     <string name="button_scan">Scan</string>

@@ -18,11 +18,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.meetgoti.temp_3.Bluetooth.Select;
 
 import com.example.meetgoti.temp_3.Bluetooth_Class.Bluetooth;
+
+import java.util.ArrayList;
 
 /**
  * Created by meetgoti on 05/04/18.
@@ -36,6 +40,8 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     private boolean registered;
     private ViewGroup my_linear_layout;
     int button_id;
+    int seek_id;
+    ArrayList<TextView> al = new ArrayList();
     String a_string = "";
     int flag = 0;
 
@@ -54,6 +60,7 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         setContentView(R.layout.newdeviceconfig);
 
         button_id = 0;
+        seek_id = 0;
         connection_state = findViewById(R.id.Connection_State);
         registered = false;
         b = new Bluetooth(this);
@@ -74,6 +81,8 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReciever , filter);
         registered = true;
+
+        add_seekBar("Testing");
 
     }
 
@@ -149,7 +158,6 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         Display("Connected to " + device.getName()  + device.getAddress());
         char a = 128;
         b.send_byte(a);
-
     }
 
     @Override
@@ -251,5 +259,33 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         });
         button_id++;
         my_linear_layout.addView(layout2);
+    }
+
+    public void add_seekBar(String mes) {
+        View layout2 = LayoutInflater.from(this).inflate(R.layout.seek_bar , my_linear_layout , false);
+        final SeekBar seek = layout2.findViewById(R.id.seekBar);
+        seek.setId(100 + seek_id);
+        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                al.get((int)seekBar.getId() - 100).setText(String.valueOf(i));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Log.d("seekbar" , String.valueOf(seekBar.getProgress()));
+            }
+        });
+        TextView textBox = layout2.findViewById(R.id.SeekBar_Name);
+        textBox.setText(mes);
+        final TextView num = layout2.findViewById(R.id.number);
+        al.add(num);
+        my_linear_layout.addView(layout2);
+        seek_id++;
     }
 }
