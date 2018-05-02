@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,6 +45,9 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     ArrayList<TextView> al = new ArrayList();
     String a_string = "";
     int flag = 0;
+    Thread th;
+    ArrayList<String> i = new ArrayList();
+    ArrayList<String> j = new ArrayList();
 
     public static boolean isStringInteger(String number ){
         try{
@@ -58,7 +62,7 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.newdeviceconfig);
-
+        th = Thread.currentThread();
         button_id = 0;
         seek_id = 0;
         connection_state = findViewById(R.id.Connection_State);
@@ -81,8 +85,6 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReciever , filter);
         registered = true;
-
-        add_seekBar("Testing");
 
     }
 
@@ -170,48 +172,46 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     int wait_flag = 0;
     int wait_number;
     @Override
-    public void onMessage(final String message) {
+    public void onMessage(final String message)  {
+
         if(isStringInteger(message)) {
             final int temp_int = Integer.parseInt(message);
             if(temp_int >> 7 == 1) {
-                if(temp_int%16 != 0) {
-                    wait_flag = 1;
-                    wait_number = temp_int;
+                int cool = temp_int>>4;
+                cool = cool%8;
+                switch (cool) {
+                    case 0 :
+                        i.add("b");
+                        break;
+                    case 1:
+                        i.add("s");
+                        break;
                 }
-                else
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            construct_app(wait_number , "");
-                        }
-                    });
             }
-        }
-        else {
-            Log.d("another_thread" , "String");
-            if(wait_flag == 1) {
-                wait_flag = 0;
+            else {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        construct_app(wait_number , message);
+                        construct();
                     }
                 });
             }
         }
-    }
-
-    private void construct_app(int temp_int , String mes) {
-        temp_int = temp_int>>4;
-        temp_int = temp_int%8;
-        switch (temp_int) {
-            case 0:
-            {
-                add_button(mes);
-                break;
-            }
+        else {
+            j.add(message);
         }
     }
+
+    void construct() {
+        for(int k = 0 ; k < i.size() ; k++) {
+            if(i.get(k).equals("s"))
+                add_seekBar(j.get(k));
+            else if(i.get(k).equals("b"))
+                add_button(j.get(k));
+        }
+    }
+
+
 
     @Override
     public void onError(String message) {
@@ -279,6 +279,10 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 Log.d("seekbar" , String.valueOf(seekBar.getProgress()));
+                int a  = ((int)seekBar.getId() - 100);
+                a = a | 0b00010000 ;
+                b.send_byte((char) a);
+                b.send_byte((char)seekBar.getProgress());
             }
         });
         TextView textBox = layout2.findViewById(R.id.SeekBar_Name);
