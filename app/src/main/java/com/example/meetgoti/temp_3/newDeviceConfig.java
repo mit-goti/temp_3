@@ -19,7 +19,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +44,8 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
     private ViewGroup my_linear_layout;
     int button_id;
     int seek_id;
+    int number_id;
+    int slider_id;
     ArrayList<TextView> al = new ArrayList();
     String a_string = "";
     int flag = 0;
@@ -65,6 +69,8 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         th = Thread.currentThread();
         button_id = 0;
         seek_id = 0;
+        number_id = 0;
+        slider_id = 0;
         connection_state = findViewById(R.id.Connection_State);
         registered = false;
         b = new Bluetooth(this);
@@ -169,11 +175,10 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         b.connectToDevice(device);
     }
 
-    int wait_flag = 0;
-    int wait_number;
+    int title_flag = 0;
     @Override
     public void onMessage(final String message)  {
-
+        Log.d("recieved" , message);
         if(isStringInteger(message)) {
             final int temp_int = Integer.parseInt(message);
             if(temp_int >> 7 == 1) {
@@ -186,9 +191,16 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
                     case 1:
                         i.add("s");
                         break;
+                    case 2:
+                        i.add("n");
+                        break;
+                    case 3:
+                        i.add("sli");
+                        break;
+
                 }
             }
-            else {
+            else if (temp_int == 0) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -198,16 +210,34 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
             }
         }
         else {
-            j.add(message);
+            if(title_flag == 0) {
+                TextView t = findViewById(R.id.title);
+                t.setText(message);
+                title_flag = 1;
+            }
+            else {
+                String[] splited = message.split("\\s+");
+                if (splited.length == 2 && isStringInteger(splited[0]) && isStringInteger(splited[1]))
+                    change_Number(message);
+                else
+                    j.add(message);
+            }
         }
     }
 
     void construct() {
         for(int k = 0 ; k < i.size() ; k++) {
-            if(i.get(k).equals("s"))
-                add_seekBar(j.get(k));
+            if(i.get(k).equals("s")) {
+                String[] splited = j.get(k).split("\\s+");
+                add_seekBar(splited[0] , Float.parseFloat(splited[1])/16 , Integer.parseInt(splited[2]));
+            }
             else if(i.get(k).equals("b"))
                 add_button(j.get(k));
+            else if(i.get(k).equals("n"))
+                add_numberView(j.get(k) , 50);
+            else if(i.get(k).equals("sli")) {
+                add_slider(j.get(k));
+            }
         }
     }
 
@@ -261,14 +291,16 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         my_linear_layout.addView(layout2);
     }
 
-    public void add_seekBar(String mes) {
+    public void add_seekBar(String mes , final float multiplier , int number_ini) {
         View layout2 = LayoutInflater.from(this).inflate(R.layout.seek_bar , my_linear_layout , false);
         final SeekBar seek = layout2.findViewById(R.id.seekBar);
         seek.setId(100 + seek_id);
+        seek.setMax(100);
+        seek.setProgress(number_ini);
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                al.get((int)seekBar.getId() - 100).setText(String.valueOf(i));
+                al.get((int)seekBar.getId() - 100).setText(String.valueOf(i*multiplier));
             }
 
             @Override
@@ -288,8 +320,58 @@ public class newDeviceConfig extends AppCompatActivity implements Bluetooth.Comm
         TextView textBox = layout2.findViewById(R.id.SeekBar_Name);
         textBox.setText(mes);
         final TextView num = layout2.findViewById(R.id.number);
+        num.setText(String.valueOf(number_ini));
         al.add(num);
         my_linear_layout.addView(layout2);
+
         seek_id++;
+    }
+
+    public void add_numberView( String mes , int initiate) {
+        View layout2 = LayoutInflater.from(this).inflate(R.layout.number_view , my_linear_layout , false);
+        final TextView t1 = layout2.findViewById(R.id.numberView);
+        t1.setId(200 + number_id);
+        final TextView t2 = layout2.findViewById(R.id.NumberView_Name);
+        t2.setText(mes);
+        t1.setText(String.valueOf(initiate));
+        my_linear_layout.addView(layout2);
+        number_id++;
+    }
+
+    public void add_slider(String name) {
+        View layout2 = LayoutInflater.from(this).inflate(R.layout.slider , my_linear_layout , false);
+        Switch sw = layout2.findViewById(R.id.switch_layout);
+        sw.setId(300 + slider_id);
+        if(name.charAt(name.length() - 1) == '0')
+            sw.setChecked(false);
+        if(name.charAt(name.length() - 1) == '1')
+            sw.setChecked(true);
+        sw.setText(name.substring(0 , name.length() - 1));
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean g) {
+                Log.d("check" , String.valueOf(b));
+                if(g) {
+                    int a = ((int)compoundButton.getId()) - 300;
+                    a = a | 0b00110000 ;
+                    b.send_byte((char) a);
+                    b.send_byte('1');
+                }
+                else {
+                    int a = ((int)compoundButton.getId()) - 300;
+                    a = a | 0b00110000 ;
+                    b.send_byte((char) a);
+                    b.send_byte('0');
+                }
+            }
+        });
+        my_linear_layout.addView(layout2);
+        slider_id++;
+    }
+
+    public void change_Number( String message ) {
+        String[] spllited = message.split("\\s+");
+        TextView temp = findViewById(200 + 0);
+        temp.setText(String.valueOf(5));
     }
 }

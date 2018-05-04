@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingBottom="20px"
+    android:paddingTop="20px">
+
+    <Switch
+        android:id="@+id/switch_layout"
+        style="@android:style/Widget.Material.CompoundButton.Switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30px"
+        android:layout_marginRight="30px"
+        android:text="Switch"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
+</LinearLayout>
